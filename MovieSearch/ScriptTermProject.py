@@ -13,6 +13,8 @@ import Dialog
 import NumItem
 import webbrowser
 import movieSearch
+import SendMailUI
+import BookMarkModule
 
 text = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
 <html><head><meta name="qrichtext" content="1" /><style type="text/css">
@@ -36,7 +38,13 @@ p, li { white-space: pre-wrap; }
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">수상내역</p>
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">%수상내역</p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><a href="%vodlink"><span style=" font-family:'굴림'; text-decoration: underline; color:#0000ff;">VOD Link</span></a></p></body></html>"""
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><a href="%vodlink"><span style=" font-family:'굴림'; text-decoration: underline; color:#0000ff;">VOD Link</span></a></p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><a href="메일보내기"><span style=" font-family:'굴림'; text-decoration: underline; color:#0000ff;">메일 보내기</span></a></p>
+</body></html>"""
+
+directorText = """<a href="$d%감독이름">%감독이름</a>"""
+actorText = """<a href="$a%배우이름">%배우이름</a>"""
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -163,11 +171,15 @@ class Ui_MainWindow(object):
         self.pushButton_2.setFlat(True)
         self.pushButton_2.setObjectName("pushButton_2")
         self.listWidget = QtWidgets.QListWidget(self.tab_2)
-        self.listWidget.setGeometry(QtCore.QRect(40, 60, 471, 251))
+        self.listWidget.setGeometry(QtCore.QRect(40, 60, 471, 221))
         self.listWidget.setObjectName("listWidget")
         self.radio_keyword = QtWidgets.QRadioButton(self.tab_2)
         self.radio_keyword.setGeometry(QtCore.QRect(390, 40, 90, 16))
         self.radio_keyword.setObjectName("radio_keyword")
+        self.label_4 = QtWidgets.QLabel(self.tab_2)
+        self.label_4.setGeometry(QtCore.QRect(240, 290, 56, 12))
+        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4.setObjectName("label_4")
         self.tabWidget.addTab(self.tab_2, "")
 
         self.tab_4 = QtWidgets.QWidget()
@@ -197,22 +209,79 @@ class Ui_MainWindow(object):
         self.movieName.setAlignment(QtCore.Qt.AlignCenter)
         self.movieName.setObjectName("movieName")
         self.textBrowser = QtWidgets.QTextBrowser(self.tab_4)
-        self.textBrowser.setGeometry(QtCore.QRect(330, 10, 371, 331))
+        self.textBrowser.setGeometry(QtCore.QRect(330, 30, 371, 311))
         self.textBrowser.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         self.textBrowser.setOpenLinks(False)
         self.textBrowser.setObjectName("textBrowser")
+        self.btn_Bookmark = QtWidgets.QPushButton(self.tab_4)
+        self.btn_Bookmark.setGeometry(QtCore.QRect(660, 0, 31, 31))
+        self.btn_Bookmark.setText("")
+        self.unbookIcon = QtGui.QIcon()
+        self.unbookIcon.addPixmap(QtGui.QPixmap("unbookmarked.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.bookIcon = QtGui.QIcon()
+        self.bookIcon.addPixmap(QtGui.QPixmap("bookmarked.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_Bookmark.setIcon(self.unbookIcon)
+        self.btn_Bookmark.setIconSize(QtCore.QSize(31, 31))
+        self.btn_Bookmark.setFlat(True)
+        self.btn_Bookmark.setObjectName("btn_Bookmark")
         self.tabWidget.addTab(self.tab_4, "")
+
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+        self.listWidget_2 = QtWidgets.QListWidget(self.tab_3)
+        self.listWidget_2.setGeometry(QtCore.QRect(20, 10, 671, 161))
+        self.listWidget_2.setObjectName("listWidget_2")
+        self.pushButton_3 = QtWidgets.QPushButton(self.tab_3)
+        self.pushButton_3.setEnabled(False)
+        self.pushButton_3.setGeometry(QtCore.QRect(360, 200, 44, 40))
+        self.pushButton_3.setText("")
+        self.pushButton_3.setIcon(icon2)
+        self.pushButton_3.setIconSize(QtCore.QSize(32, 32))
+        self.pushButton_3.setFlat(True)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_4 = QtWidgets.QPushButton(self.tab_3)
+        self.pushButton_4.setEnabled(False)
+        self.pushButton_4.setGeometry(QtCore.QRect(310, 200, 44, 40))
+        self.pushButton_4.setText("")
+        self.pushButton_4.setIcon(icon1)
+        self.pushButton_4.setIconSize(QtCore.QSize(32, 32))
+        self.pushButton_4.setFlat(True)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.list_Favorite_Director = QtWidgets.QListWidget(self.tab_3)
+        self.list_Favorite_Director.setGeometry(QtCore.QRect(20, 210, 251, 121))
+        self.list_Favorite_Director.setObjectName("list_Favorite_Director")
+        self.list_Favorite_Actors = QtWidgets.QListWidget(self.tab_3)
+        self.list_Favorite_Actors.setGeometry(QtCore.QRect(440, 210, 251, 121))
+        self.list_Favorite_Actors.setObjectName("list_Favorite_Actors")
+        self.label = QtWidgets.QLabel(self.tab_3)
+        self.label.setGeometry(QtCore.QRect(110, 190, 81, 16))
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.label_2 = QtWidgets.QLabel(self.tab_3)
+        self.label_2.setGeometry(QtCore.QRect(530, 190, 81, 16))
+        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_2.setObjectName("label_2")
+        self.label_3 = QtWidgets.QLabel(self.tab_3)
+        self.label_3.setGeometry(QtCore.QRect(330, 180, 56, 12))
+        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setObjectName("label_3")
+        self.tabWidget.addTab(self.tab_3, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.currentChanged['int'].connect(self.OnTabChange)
         self.textBrowser.anchorClicked['QUrl'].connect(self.RedirectionURL)
         self.btn_movieSearch.clicked['bool'].connect(self.PressSearchButton)
         self.pushButton.clicked['bool'].connect(self.DecreasePage)
         self.pushButton_2.clicked['bool'].connect(self.IncreasePage)
+        self.pushButton_3.clicked['bool'].connect(self.IncreaseBookmarkPage)
+        self.pushButton_4.clicked['bool'].connect(self.DecreaseBookmarkPage)
         self.listWidget.currentRowChanged['int'].connect(self.ClickMovieList)
+        self.listWidget_2.itemDoubleClicked['QListWidgetItem*'].connect(self.OnDoubleClickBookmark)
         self.btn_movie.clicked['bool'].connect(self.MovieDetail)
         self.btn_boxoffice.clicked['bool'].connect(self.BoxOfficeDetail)
+        self.btn_Bookmark.clicked['bool'].connect(self.PushBookmarkButton)
         self.table_boxoffice.currentCellChanged['int','int','int','int'].connect(self.ClickBoxOffice)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -220,15 +289,130 @@ class Ui_MainWindow(object):
         self.dialog = QtWidgets.QDialog(self.centralwidget)
         self.dui.setupUi(self.dialog)
 
+        self.mailUI = SendMailUI.Ui_Dialog()
+        self.mailDialog = QtWidgets.QDialog(self.centralwidget)
+        self.mailUI.setupUi(self.mailDialog)
+
         self.searchPage = 0
+        self.bookmarkPage = 0
         self.fullPlot = ''
 
     def RedirectionURL(self, url):
-        if url.url() == "줄거리":
+        textUrl = url.url()
+        if textUrl[0] == '$':
+            if textUrl[1] == 'd':
+                self.radio_director.setChecked(True)
+            elif textUrl[1] == 'a':
+                self.radio_actor.setChecked(True)
+            word = textUrl[2:]
+            self.lineEdit.setText(word)
+            self.SearchMovie()
+            self.tabWidget.setCurrentIndex(1)
+        elif textUrl == "줄거리":
             self.dui.plainTextEdit.setPlainText(self.fullPlot)
             self.dialog.exec_()
+        elif textUrl == "메일보내기":
+            self.mailDialog.exec_()
         else:
-            webbrowser.open_new(url.url())
+            webbrowser.open_new(textUrl)
+
+    def PushBookmarkButton(self):
+        for bm in BookMarkModule.BookMarkedList:
+            if SendMailUI.currentDetailData["DOCID"].strip() == bm.DOCID:
+                self.btn_Bookmark.setIcon(self.unbookIcon)
+                BookMarkModule.delete(bm.DOCID)
+                return
+        self.btn_Bookmark.setIcon(self.bookIcon)
+        BookMarkModule.insert(SendMailUI.currentDetailData)
+
+    def OnDoubleClickBookmark(self, item):
+        index = self.bookmarkPage * 10 + self.listWidget_2.row(item)
+        bookmark = BookMarkModule.BookMarkedList[index]
+        movie = movieSearch.getMarkedMovieData(bookmark.title, bookmark.prodYear, bookmark.DOCID)
+        SendMailUI.currentDetailData = movie.dicData
+        self.RefreshDetailData(movie.dicData)
+        self.tabWidget.setCurrentIndex(2)
+        pass
+
+    def RefreshBookmarkList(self):
+        self.listWidget_2.clear()
+        self.list_Favorite_Actors.clear()
+        self.list_Favorite_Director.clear()
+        for i in range(self.bookmarkPage * 10, min((self.bookmarkPage + 1) * 10, len(BookMarkModule.BookMarkedList))):
+            bm = BookMarkModule.BookMarkedList[i]
+            self.listWidget_2.addItem("%s(%s)  -  %s" % (bm.title, bm.prodYear, bm.directors))
+        for d in BookMarkModule.FavoriteDirectors:
+            self.list_Favorite_Director.addItem(d)
+        for a in BookMarkModule.FavoriteActors:
+            self.list_Favorite_Actors.addItem(a)
+        self.label_3.setText("%d / %d" % (self.bookmarkPage + 1, len(BookMarkModule.BookMarkedList) / 10 + 1))
+
+    def RefreshDetailData(self, movie):
+        url = movie["posters"][0].strip()
+        if url != '':
+            u = urlopen(url)
+            d = u.read()
+            u.close()
+            image = QtGui.QPixmap()
+            image.loadFromData(d)
+            self.poster.setPixmap(image)
+        else:
+            self.poster.setText("포스터 정보 없음")
+
+        self.movieName.setText(movie["title"])
+        tmpHtml = text.replace("%영화제목", movie["titleEng"])
+        tmpHtml = tmpHtml.replace("%연도", movie["prodYear"])
+        tmpHtml = tmpHtml.replace("%국가", movie["nation"])
+        tmpHtml = tmpHtml.replace("%상영시간", movie["runtime"])
+        dir = ''
+        for s in movie["directors"]:
+            dir += directorText.replace("%감독이름", s.strip())
+            dir += ' '
+        tmpHtml = tmpHtml.replace("%감독", dir)
+        dir = ''
+        for a in movie["actors"]:
+            dir += actorText.replace("%배우이름", a.strip())
+            dir += ' '
+        tmpHtml = tmpHtml.replace("%배우들", dir)
+        dir = ''
+        for a in movie["keywords"]:
+            dir += a
+            dir += ' '
+        tmpHtml = tmpHtml.replace("%키워드들", dir)
+        self.fullPlot = movie["plot"].strip()
+        if self.fullPlot != '':
+            str = self.fullPlot[0:50] + "..."
+            tmpHtml = tmpHtml.replace("%줄거리요약", str)
+        else:
+            tmpHtml = tmpHtml.replace("%줄거리요약", '')
+        dir = ''
+        for a in movie["awards"]:
+            if a.strip() == '':
+                continue
+            dir += a.strip()
+            dir += """ <img src="trophy.png" width=12 height=12><br>"""
+        tmpHtml = tmpHtml.replace("%수상내역", dir)
+        tmpHtml = tmpHtml.replace("%vodlink", movie['vod'].strip())
+
+        self.textBrowser.setHtml(tmpHtml)
+
+        isBookmarked = False
+        for bm in BookMarkModule.BookMarkedList:
+            if movie["DOCID"].strip() == bm.DOCID:
+                isBookmarked = True
+                break
+        if isBookmarked:
+            self.btn_Bookmark.setIcon(self.bookIcon)
+        else:
+            self.btn_Bookmark.setIcon(self.unbookIcon)
+
+    def OnTabChange(self, tabIndex):
+        if tabIndex == 3:
+            self.RefreshBookmarkList()
+            if (self.bookmarkPage - 1) * 10 >= 0:
+                self.pushButton_4.setEnabled(True)
+            if (self.bookmarkPage + 1) * 10 < len(BookMarkModule.BookMarkedList):
+                self.pushButton_3.setEnabled(True)
 
     def IncreasePage(self):
         self.searchPage += 1
@@ -242,6 +426,20 @@ class Ui_MainWindow(object):
         self.SearchMovie()
         if self.searchPage == 0: self.pushButton.setDisabled(True)
         self.pushButton_2.setEnabled(True)
+
+    def IncreaseBookmarkPage(self):
+        self.bookmarkPage += 1
+        self.RefreshBookmarkList()
+        if (self.bookmarkPage + 1) * 10 >= len(BookMarkModule.BookMarkedList):
+            self.pushButton_3.setDisabled(True)
+        self.pushButton_4.setEnabled(True)
+
+    def DecreaseBookmarkPage(self):
+        self.bookmarkPage -= 1
+        self.RefreshBookmarkList()
+        if (self.bookmarkPage - 1) * 10 < 0:
+            self.pushButton_4.setDisabled(True)
+        self.pushButton_3.setEnabled(True)
 
     def PressSearchButton(self):
         self.searchPage = 0
@@ -266,6 +464,8 @@ class Ui_MainWindow(object):
         else:
             for movie in movieSearch.movieList:
                 self.listWidget.addItem("%s(%s)  -  %s" % (movie.dicData["title"], movie.dicData["prodYear"], movie.dicData["directors"][0]))
+
+        self.label_4.setText("%d / %d" % (self.searchPage + 1,int(movieSearch.totalCount) / 10 + 1))
 
     def ClickMovieList(self, mIndex):
         if mIndex >= 0:
@@ -304,109 +504,21 @@ class Ui_MainWindow(object):
         index = self.listWidget.currentIndex().row()
         if index >= 0:
             movie = movieSearch.movieList[index]
+            SendMailUI.currentDetailData = movie.dicData
             #포스터
-            url = movie.dicData["posters"][0].strip()
-            if url != '':
-                u = urlopen(url)
-                d = u.read()
-                u.close()
-                image = QtGui.QPixmap()
-                image.loadFromData(d)
-                self.poster.setPixmap(image)
-            else:
-                self.poster.setText("포스터 정보 없음")
-
-            self.movieName.setText(movie.dicData["title"])
-            tmpHtml = text.replace("%영화제목", movie.dicData["titleEng"])
-            tmpHtml = tmpHtml.replace("%연도", movie.dicData["prodYear"])
-            tmpHtml = tmpHtml.replace("%국가", movie.dicData["nation"])
-            tmpHtml = tmpHtml.replace("%상영시간", movie.dicData["runtime"])
-            dir = ''
-            for s in movie.dicData["directors"]:
-                dir += s
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%감독", dir)
-            dir = ''
-            for a in movie.dicData["actors"]:
-                dir += a
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%배우들", dir)
-            dir = ''
-            for a in movie.dicData["keywords"]:
-                dir += a
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%키워드들", dir)
-            self.fullPlot = movie.dicData["plot"].strip()
-            if self.fullPlot != '':
-                str = self.fullPlot[0:50] + "..."
-                tmpHtml = tmpHtml.replace("%줄거리요약", str)
-            else:
-                tmpHtml = tmpHtml.replace("%줄거리요약", '')
-            dir = ''
-            for a in movie.dicData["awards"]:
-                dir += a.strip()
-                dir += """ <img src="trophy.png" width=12 height=12><br>"""
-            tmpHtml = tmpHtml.replace("%수상내역", dir)
-            tmpHtml = tmpHtml.replace("%vodlink", movie.dicData['vod'].strip())
-
-            self.textBrowser.setHtml(tmpHtml)
+            self.RefreshDetailData(movie.dicData)
 
             self.tabWidget.setCurrentIndex(2)
 
     def BoxOfficeDetail(self):
+        global currentDetailData
         boData = BoxOffice.BOmovieList
         index = self.table_boxoffice.currentRow()
         if index >= 0:
             movie = boData[index].movieData
             if movie == None: return
-            url = movie.dicData["posters"][0].strip()
-            if url != '':
-                u = urlopen(url)
-                d = u.read()
-                u.close()
-                image = QtGui.QPixmap()
-                image.loadFromData(d)
-                self.poster.setPixmap(image)
-            else:
-                self.poster.setText("포스터 정보 없음")
-
-            self.movieName.setText(movie.dicData["title"])
-            tmpHtml = text.replace("%영화제목", movie.dicData["titleEng"])
-            tmpHtml = tmpHtml.replace("%연도", movie.dicData["prodYear"])
-            tmpHtml = tmpHtml.replace("%국가", movie.dicData["nation"])
-            tmpHtml = tmpHtml.replace("%상영시간", movie.dicData["runtime"])
-            dir = ''
-            for s in movie.dicData["directors"]:
-                dir += s
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%감독", dir)
-            dir = ''
-            for a in movie.dicData["actors"]:
-                dir += a
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%배우들", dir)
-            dir = ''
-            for a in movie.dicData["keywords"]:
-                dir += a
-                dir += ' '
-            tmpHtml = tmpHtml.replace("%키워드들", dir)
-            self.fullPlot = movie.dicData["plot"].strip()
-            if self.fullPlot != '':
-                str = self.fullPlot[0:50] + "..."
-                tmpHtml = tmpHtml.replace("%줄거리요약", str)
-            else:
-                tmpHtml = tmpHtml.replace("%줄거리요약", '')
-            if movie.dicData["awards"][0].strip() != '':
-                dir = ''
-                for a in movie.dicData["awards"]:
-                    dir += a.strip()
-                    dir += """ <img src="trophy.png" width=12 height=12><br>"""
-                tmpHtml = tmpHtml.replace("%수상내역", dir)
-            else:
-                tmpHtml = tmpHtml.replace("%수상내역", '')
-            tmpHtml = tmpHtml.replace("%vodlink", movie.dicData['vod'].strip())
-
-            self.textBrowser.setHtml(tmpHtml)
+            SendMailUI.currentDetailData = movie.dicData
+            self.RefreshDetailData(movie.dicData)
 
             self.tabWidget.setCurrentIndex(2)
 
@@ -434,6 +546,14 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "영화 검색"))
         self.poster.setText(_translate("MainWindow", "포스터 정보 없음"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("MainWindow", "상세 정보"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "북마크"))
+        self.label.setText(_translate("MainWindow", "선호하는 감독"))
+        self.label_2.setText(_translate("MainWindow", "선호하는 배우"))
+        self.label_3.setText(_translate("MainWindow", "0 / 0"))
+        self.label_4.setText(_translate("MainWindow", "0 / 0"))
+
+    def GetCurrentDetailData(self):
+        return self.currentDetailData
 
 
 if __name__ == "__main__":
@@ -443,6 +563,7 @@ if __name__ == "__main__":
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
+    BookMarkModule.Init()
     BoxOffice.getYesterdayBoxOffice()
     boData = BoxOffice.BOmovieList
     ui.table_boxoffice.setRowCount(len(boData))

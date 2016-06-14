@@ -340,6 +340,7 @@ def getMovieData(title, openDate):
     conn = http.client.HTTPConnection("api.koreafilm.or.kr")
     conn.request("GET", "/openapi-data2/wisenut/search_api/search_xml.jsp?"
                  + "ServiceKey=" + KOFAkey
+                 + "&listCount=" + str(50)
                  + "&collection=kmdb_new&detail=Y"
                  + "&title=" + utf8title)
     req = conn.getresponse()
@@ -411,6 +412,87 @@ def getMovieData(title, openDate):
                        rlsDate = e.text
                        rlsDate = rlsDate.replace(' ','')
                if rlsDate == openDate:
+                    return Movie(dic)
+    movieTree.clear()
+    return None
+
+def getMarkedMovieData(title, openDate, ID):
+    global KOFAkey
+    utf8title = urllib.parse.quote(title)
+    conn = http.client.HTTPConnection("api.koreafilm.or.kr")
+    conn.request("GET", "/openapi-data2/wisenut/search_api/search_xml.jsp?"
+                 + "ServiceKey=" + KOFAkey
+                 + "&listCount=" + str(50)
+                 + "&collection=kmdb_new&detail=Y"
+                 + "&title=" + utf8title)
+    req = conn.getresponse()
+    if req.status != 200: return None
+    CLen = req.getheader("Content-Length")
+    if CLen != None: CLen=int(CLen)
+    strXML = req.read(CLen).decode('utf-8')
+    movieTree = ElementTree.fromstring(strXML)
+    
+    for child in movieTree.getchildren():
+        retMovie = None
+        if child.tag == "Result":
+           resultList = child.getchildren()
+           for movie in resultList:
+               dic = dict()
+               for e in movie:
+                   if e.tag == "DOCID": dic[e.tag] = e.text
+                   elif e.tag == "title" : 
+                       s = e.text
+                       s = s.replace('<!HS>','')
+                       s = s.replace('<!HE>',' ')
+                       dic[e.tag] = s
+                   elif e.tag == "titleEng" : dic[e.tag] = e.text
+                   elif e.tag == "prodYear" : dic[e.tag] = e.text
+                   elif e.tag == "runtime" : dic[e.tag] = e.text + '분'
+                   elif e.tag == "company" : dic[e.tag] = e.text
+                   elif e.tag == "plot" : dic[e.tag] = e.text
+                   elif e.tag == "rating" : dic[e.tag] = e.text
+                   elif e.tag == "nation" : dic[e.tag] = e.text
+                   elif e.tag == "posters" :
+                       s = e.text
+                       s = s.replace('|', '\n')
+                       posters = s.splitlines()
+                       dic[e.tag] = posters
+                   elif e.tag == "Awards1":
+                       s = e.text
+                       s = s.replace('|', '\n')
+                       awards = s.splitlines()
+                       dic['awards'] = awards
+                   elif e.tag == "keywords":
+                       s = e.text
+                       s = s.replace(',', '\n')
+                       keywords = s.splitlines()
+                       dic[e.tag] = keywords
+                   elif e.tag == "directors":
+                       sub = e.getchildren()
+                       directors = []
+                       for d in sub:
+                           s = d.find("directorNm").text
+                           s = s.replace('<!HS>','')
+                           s = s.replace('<!HE>',' ')
+                           directors.append(s)
+                       dic[e.tag] = directors
+                   elif e.tag == "vods":
+                       sub = e.getchildren()
+                       if len(sub) > 0:
+                            dic['vod'] = sub[0].find("vodUrl").text
+                   elif e.tag == "actors":
+                       sub = e.getchildren()
+                       n = 0
+                       actors = []
+                       if len(sub) >= 4: n =4
+                       else: n = len(sub)
+                       for i in range(0, n):
+                           s = sub[i].find("actorNm").text
+                           s = s.replace('<!HS>','')
+                           s = s.replace('<!HE>','')
+                           actors.append(s)
+                       dic[e.tag] = actors
+               if dic["prodYear"].strip() == openDate and dic["DOCID"].strip() == ID:
                     return Movie(dic)
     movieTree.clear()
     return None
